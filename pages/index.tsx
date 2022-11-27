@@ -49,6 +49,8 @@ const genCode = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
     return (
       prev +
       `
+      import { gql } from '@apollo/client'
+
       export const ${getConstantName(curr.name)} = gql\`
       ${type.toLowerCase()} ${curr.name} ${
         curr.args.length
