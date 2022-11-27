@@ -1,8 +1,87 @@
-import { Stack, TextField } from '@mui/material'
+import { Box, Button, Stack, TextField } from '@mui/material'
+import getIntrospection, { ArgType, IntrospectionQuery } from '@utils/getIntrospection'
+import { TypeKind } from 'graphql'
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import { useState } from 'react'
+
+const style = {
+  inputWrapper: {
+    display: 'grid',
+    gridTemplateColumns: '1fr auto',
+    gap: '8px',
+  },
+  textareaWrapper: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+  },
+}
+
+const getDefaultValue = (value: string) => {
+  return value ? ` = ${value}` : ``
+}
+
+const getType = (type: ArgType): string => {
+  const isList = type.kind === TypeKind.LIST
+  const isNull = type.kind === TypeKind.NON_NULL ? '!' : ''
+  const typeName = type.name ? type.name : getType(type.ofType)
+
+  return isList ? `[${typeName + isNull}]` : typeName + isNull
+}
+
+const genCode = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
+  const fields = data.__schema.types.find(item => item.name === type)?.fields || []
+  return fields.reduce((prev, curr) => {
+    return (
+      prev +
+      `
+      ${type.toLowerCase()} ${curr.name} ${
+        curr.args.length
+          ? `(${curr.args.map(
+              arg => `
+              $${arg.name}: ${getType(arg.type)}${getDefaultValue(arg.defaultValue)}`,
+            )}
+            ) {
+              ${curr.name} ${
+              curr.args.length
+                ? `(${curr.args.map(
+                    arg => `
+                    ${arg.name}: $${arg.name}`,
+                  )}
+                  )`
+                : ''
+            } { __typename }
+            }`
+          : `{
+              ${curr.name} { __typename }
+            }`
+      }
+      `
+    )
+  }, '')
+}
 
 const Home: NextPage = () => {
+  const [uri, setUri] = useState('')
+  const [queryValue, setQueryValue] = useState('')
+  const [mutationValue, setMutationValue] = useState('')
+
+  const handleConfirm = async () => {
+    if (!uri) return
+
+    try {
+      const { data } = await getIntrospection(uri)
+      const queryCode = genCode('Query', data)
+      const mutationCode = genCode('Mutation', data)
+
+      setQueryValue(queryCode)
+      setMutationValue(mutationCode)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <>
       <Head>
@@ -12,11 +91,23 @@ const Home: NextPage = () => {
       </Head>
 
       <Stack gap="16px">
-        <TextField fullWidth variant="outlined" label="Endpoint" />
+        <Box sx={style.inputWrapper}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="Endpoint"
+            value={uri}
+            onChange={event => setUri(event.target.value)}
+          />
+          <Button variant="contained" onClick={handleConfirm}>
+            Confirm
+          </Button>
+        </Box>
 
-        <TextField fullWidth multiline rows={10} label="Query" />
-
-        <TextField fullWidth multiline rows={10} label="Mutation" />
+        <Box sx={style.textareaWrapper}>
+          <TextField fullWidth multiline rows={16} label="Query" value={queryValue} />
+          <TextField fullWidth multiline rows={16} label="Mutation" value={mutationValue} />
+        </Box>
       </Stack>
     </>
   )
