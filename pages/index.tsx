@@ -23,6 +23,18 @@ const getDefaultValue = (value: string) => {
   return value ? ` = ${value}` : ``
 }
 
+const getConstantName = (name: string) => {
+  let constantName = ''
+
+  for (let i = 0; i < name.length; i++) {
+    const char = name[i]
+    const isSearch = char.search(/[A-Z]/) !== -1
+    constantName += (isSearch ? '_' : '') + char
+  }
+
+  return constantName.toUpperCase()
+}
+
 const getType = (type: ArgType): string => {
   const isList = type.kind === TypeKind.LIST
   const isNull = type.kind === TypeKind.NON_NULL ? '!' : ''
@@ -37,6 +49,7 @@ const genCode = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
     return (
       prev +
       `
+      export const ${getConstantName(curr.name)} = gql\`
       ${type.toLowerCase()} ${curr.name} ${
         curr.args.length
           ? `(${curr.args.map(
@@ -58,6 +71,7 @@ const genCode = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
               ${curr.name} { __typename }
             }`
       }
+      \`
       `
     )
   }, '')
