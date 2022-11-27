@@ -1,4 +1,5 @@
-import { Box, Button, Stack, TextField } from '@mui/material'
+import { InputText, InputTextarea } from '@components/Input'
+import { Box, Button, Stack } from '@mui/material'
 import getIntrospection, { ArgType, IntrospectionQuery } from '@utils/getIntrospection'
 import { TypeKind } from 'graphql'
 import type { NextPage } from 'next'
@@ -92,21 +93,15 @@ const Home: NextPage = () => {
 
       <Stack gap="16px">
         <Box sx={style.inputWrapper}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            label="Endpoint"
-            value={uri}
-            onChange={event => setUri(event.target.value)}
-          />
+          <InputText label="Endpoint" value={uri} onChange={event => setUri(event.target.value)} />
           <Button variant="contained" onClick={handleConfirm}>
             Confirm
           </Button>
         </Box>
 
         <Box sx={style.textareaWrapper}>
-          <TextField fullWidth multiline rows={16} label="Query" value={queryValue} />
-          <TextField fullWidth multiline rows={16} label="Mutation" value={mutationValue} />
+          <InputTextarea label="Query" value={queryValue} />
+          <InputTextarea label="Mutation" value={mutationValue} />
         </Box>
       </Stack>
     </>
