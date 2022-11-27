@@ -1,0 +1,6 @@
+{
+  "**/*.(ts|tsx)": [
+    "yarn eslint --max-warnings 0",
+    "yarn prettier --write"
+  ]
+}
