@@ -19,6 +19,10 @@ export const INTROSPECTION_QUERY = gql`
                 ofType {
                   kind
                   name
+                  ofType {
+                    kind
+                    name
+                  }
                 }
               }
             }
