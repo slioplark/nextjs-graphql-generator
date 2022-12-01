@@ -119,14 +119,14 @@ const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
 
     ${
       item.args.length
-        ? `const variables = {${item.args.map(
+        ? `interface Variables {${item.args.map(
             arg => `
             ${arg.name}${getNullType(arg.type)}: ${getHookType(arg.type)}`,
           )}}`
         : ''
     }
 
-    ${getHookName(item.name)} = (${
+    const ${getHookName(item.name)} = (${
       item.args.length
         ? `variables${
             item.args.filter(arg => getNullType(arg.type) === '?').length ? '?' : ''
