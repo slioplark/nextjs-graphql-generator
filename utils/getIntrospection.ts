@@ -17,6 +17,7 @@ type Arg = {
 type Field = {
   name: string
   args: Arg[]
+  type: ArgType
 }
 
 type Type = {

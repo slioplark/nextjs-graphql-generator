@@ -24,6 +24,18 @@ const style = {
   },
 }
 
+const scalarType: { [key: string]: string } = {
+  ID: 'string',
+  UUID: 'string',
+  String: 'string',
+  Boolean: 'boolean',
+  Int: 'number',
+  Float: 'number',
+  DateOnly: 'Date',
+  DateTime: 'Date',
+  FieldInput: 'any',
+}
+
 const getDefaultValue = (value: string) => {
   return value ? ` = ${value}` : ``
 }
@@ -40,12 +52,38 @@ const getConstantName = (name: string) => {
   return constantName.toUpperCase()
 }
 
+const getHookName = (name: string) => {
+  let hookName = ''
+
+  for (let i = 0; i < name.length; i++) {
+    const char = i === 0 ? name[i].toUpperCase() : name[i]
+    hookName += char
+  }
+
+  return `use${hookName}`
+}
+
+const getHookType = (type: ArgType): string => {
+  const isList = type.kind === TypeKind.LIST
+  const typeName = type.name ? type.name : getHookType(type.ofType)
+  const hookType = scalarType[typeName] ? scalarType[typeName] : typeName
+
+  return isList ? `${hookType}[]` : hookType
+}
+
+const getNullType = (type: ArgType): string => {
+  const isNonNull = type.kind === TypeKind.NON_NULL
+  const nullType = type.name ? '?' : getNullType(type.ofType)
+
+  return isNonNull ? '' : nullType
+}
+
 const getType = (type: ArgType): string => {
   const isList = type.kind === TypeKind.LIST
-  const isNull = type.kind === TypeKind.NON_NULL ? '!' : ''
+  const nonNull = type.kind === TypeKind.NON_NULL ? '!' : ''
   const typeName = type.name ? type.name : getType(type.ofType)
 
-  return isList ? `[${typeName + isNull}]` : typeName + isNull
+  return isList ? `[${typeName + nonNull}]` : typeName + nonNull
 }
 
 const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
@@ -78,6 +116,27 @@ const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
           }`
     }
     \`
+
+    ${
+      item.args.length
+        ? `const variables = {${item.args.map(
+            arg => `
+            ${arg.name}${getNullType(arg.type)}: ${getHookType(arg.type)}`,
+          )}}`
+        : ''
+    }
+
+    ${getHookName(item.name)} = (${
+      item.args.length
+        ? `variables${
+            item.args.filter(arg => getNullType(arg.type) === '?').length ? '?' : ''
+          }: Variables`
+        : ''
+    }) => {
+      return useQuery<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(item.name)}, {
+        variables: variables
+      })
+    }
     `,
   }))
 }

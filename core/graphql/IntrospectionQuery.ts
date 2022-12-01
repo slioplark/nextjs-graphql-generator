@@ -27,6 +27,22 @@ export const INTROSPECTION_QUERY = gql`
               }
             }
           }
+          type {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                }
+              }
+            }
+          }
         }
       }
     }
