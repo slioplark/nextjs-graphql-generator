@@ -117,6 +117,8 @@ const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
     }
     \`
 
+    import use${type} from './use${type}'
+
     ${
       item.args.length
         ? `interface Variables {${item.args.map(
@@ -133,7 +135,9 @@ const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
           }: Variables`
         : ''
     }) => {
-      return useQuery<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(item.name)}, {
+      return use${type}<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(
+      item.name,
+    )}, {
         variables: variables
       })
     }
