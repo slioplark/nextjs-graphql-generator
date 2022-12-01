@@ -9,7 +9,6 @@ const InputTextarea: React.FC<TextFieldProps> = ({ label, value, onChange }) => 
       multiline
       label={label}
       value={value}
-      minRows={16}
       onChange={onChange}
       InputLabelProps={{ shrink: true }}
     />

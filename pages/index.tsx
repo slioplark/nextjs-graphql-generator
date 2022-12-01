@@ -6,6 +6,11 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useState } from 'react'
 
+interface Option {
+  label: string
+  value: string
+}
+
 const style = {
   inputWrapper: {
     display: 'grid',
@@ -43,57 +48,55 @@ const getType = (type: ArgType): string => {
   return isList ? `[${typeName + isNull}]` : typeName + isNull
 }
 
-const genCode = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
+const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
   const fields = data.__schema.types.find(item => item.name === type)?.fields || []
-  return fields.reduce((prev, curr) => {
-    return (
-      prev +
-      `
-      import { gql } from '@apollo/client'
+  return fields.map(item => ({
+    label: item.name,
+    value: `
+    import { gql } from '@apollo/client'
 
-      export const ${getConstantName(curr.name)} = gql\`
-      ${type.toLowerCase()} ${curr.name} ${
-        curr.args.length
-          ? `(${curr.args.map(
-              arg => `
-              $${arg.name}: ${getType(arg.type)}${getDefaultValue(arg.defaultValue)}`,
-            )}
-            ) {
-              ${curr.name} ${
-              curr.args.length
-                ? `(${curr.args.map(
-                    arg => `
-                    ${arg.name}: $${arg.name}`,
-                  )}
-                  )`
-                : ''
-            } { __typename }
-            }`
-          : `{
-              ${curr.name} { __typename }
-            }`
-      }
-      \`
-      `
-    )
-  }, '')
+    export const ${getConstantName(item.name)} = gql\`
+    ${type.toLowerCase()} ${item.name} ${
+      item.args.length
+        ? `(${item.args.map(
+            arg => `
+            $${arg.name}: ${getType(arg.type)}${getDefaultValue(arg.defaultValue)}`,
+          )}
+          ) {
+            ${item.name} ${
+            item.args.length
+              ? `(${item.args.map(
+                  arg => `
+                  ${arg.name}: $${arg.name}`,
+                )}
+                )`
+              : ''
+          } { __typename }
+          }`
+        : `{
+            ${item.name} { __typename }
+          }`
+    }
+    \`
+    `,
+  }))
 }
 
 const Home: NextPage = () => {
   const [uri, setUri] = useState('')
-  const [queryValue, setQueryValue] = useState('')
-  const [mutationValue, setMutationValue] = useState('')
+  const [queryValues, setQueryValues] = useState<Option[]>([])
+  const [mutationValues, setMutationValues] = useState<Option[]>([])
 
   const handleConfirm = async () => {
     if (!uri) return
 
     try {
       const { data } = await getIntrospection(uri)
-      const queryCode = genCode('Query', data)
-      const mutationCode = genCode('Mutation', data)
+      const queryCodes = genCodes('Query', data)
+      const mutationCodes = genCodes('Mutation', data)
 
-      setQueryValue(queryCode)
-      setMutationValue(mutationCode)
+      setQueryValues(queryCodes)
+      setMutationValues(mutationCodes)
     } catch (error) {
       console.log(error)
     }
@@ -116,8 +119,17 @@ const Home: NextPage = () => {
         </Box>
 
         <Box sx={style.textareaWrapper}>
-          <InputTextarea label="Query" value={queryValue} />
-          <InputTextarea label="Mutation" value={mutationValue} />
+          <Stack gap="16px">
+            {queryValues.map((item, index) => (
+              <InputTextarea key={index} {...item} />
+            ))}
+          </Stack>
+
+          <Stack gap="16px">
+            {mutationValues.map((item, index) => (
+              <InputTextarea key={index} {...item} />
+            ))}
+          </Stack>
         </Box>
       </Stack>
     </>
