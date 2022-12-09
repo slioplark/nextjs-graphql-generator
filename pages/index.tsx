@@ -135,11 +135,9 @@ const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
           }: Variables`
         : ''
     }) => {
-      return use${type}<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(
-      item.name,
-    )}, {
-        variables: variables
-      })
+      return use${type}<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(item.name)}${
+      item.args.length ? ` , { variables: variables }` : ''
+    })
     }
     `,
   }))
