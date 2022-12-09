@@ -15,12 +15,12 @@ const style = {
   inputWrapper: {
     display: 'grid',
     gridTemplateColumns: '1fr auto',
-    gap: '8px',
+    gap: '16px',
   },
   textareaWrapper: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
+    gap: '16px',
   },
 }
 
