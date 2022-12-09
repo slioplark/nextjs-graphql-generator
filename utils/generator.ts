@@ -103,6 +103,9 @@ const genHooks = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
     label: getHookName(item.name),
     value: `
     import use${type} from './use${type}'
+    import { ${getConstantName(item.name)} } from '@core/graphql/${
+      type === 'Query' ? 'queries' : 'mutations'
+    }'
 
     ${
       item.args.length
