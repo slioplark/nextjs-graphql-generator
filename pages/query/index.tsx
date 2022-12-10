@@ -2,7 +2,7 @@ import { InputText, InputTextarea } from '@components/Input'
 import { Option } from '@core/types'
 import { Box, Button, Stack } from '@mui/material'
 import downloadZip from '@utils/downloadZip'
-import { genCodes, genHooks } from '@utils/generator'
+import { genCodes, genQueryHooks } from '@utils/generator'
 import getIntrospection from '@utils/getIntrospection'
 import Head from 'next/head'
 import { useState } from 'react'
@@ -31,7 +31,7 @@ const Query = () => {
     try {
       const { data } = await getIntrospection(uri)
       const codes = genCodes('Query', data)
-      const hooks = genHooks('Query', data)
+      const hooks = genQueryHooks(data)
 
       setCodeValues(codes)
       setHookValues(hooks)

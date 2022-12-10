@@ -2,7 +2,7 @@ import { InputText, InputTextarea } from '@components/Input'
 import { Option } from '@core/types'
 import { Box, Button, Stack } from '@mui/material'
 import downloadZip from '@utils/downloadZip'
-import { genCodes, genHooks } from '@utils/generator'
+import { genCodes, genMutationHooks } from '@utils/generator'
 import getIntrospection from '@utils/getIntrospection'
 import Head from 'next/head'
 import { useState } from 'react'
@@ -31,7 +31,7 @@ const Mutation = () => {
     try {
       const { data } = await getIntrospection(uri)
       const codes = genCodes('Mutation', data)
-      const hooks = genHooks('Mutation', data)
+      const hooks = genMutationHooks(data)
 
       setCodeValues(codes)
       setHookValues(hooks)

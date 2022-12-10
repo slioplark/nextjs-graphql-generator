@@ -97,15 +97,13 @@ const genCodes = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
   }))
 }
 
-const genHooks = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
-  const fields = data.__schema.types.find(item => item.name === type)?.fields || []
+const genQueryHooks = (data: IntrospectionQuery) => {
+  const fields = data.__schema.types.find(item => item.name === 'Query')?.fields || []
   return fields.map(item => ({
     label: getHookName(item.name),
     value: `
-    import use${type} from './use${type}'
-    import { ${getConstantName(item.name)} } from '@core/graphql/${
-      type === 'Query' ? 'queries' : 'mutations'
-    }'
+    import useQuery from './useQuery'
+    import { ${getConstantName(item.name)} } from '@core/graphql/queries'
 
     ${
       item.args.length
@@ -123,8 +121,8 @@ const genHooks = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
           }: Variables`
         : ''
     }) => {
-      return use${type}<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(item.name)}${
-      item.args.length ? ` , { variables: variables }` : ''
+      return useQuery<{ ${item.name}: ${getHookType(item.type)} }>(${getConstantName(item.name)}${
+      item.args.length ? `, { variables: variables }` : ''
     })
     }
 
@@ -133,4 +131,29 @@ const genHooks = (type: 'Query' | 'Mutation', data: IntrospectionQuery) => {
   }))
 }
 
-export { genCodes, genHooks }
+const genMutationHooks = (data: IntrospectionQuery) => {
+  const fields = data.__schema.types.find(item => item.name === 'Mutation')?.fields || []
+  return fields.map(item => ({
+    label: getHookName(item.name),
+    value: `
+    import useMutation from './useMutation'
+    import { ${getConstantName(item.name)} } from '@core/graphql/mutations'
+
+    const ${getHookName(item.name)} = () => {
+      return useMutation<{ ${item.name}: ${getHookType(item.type)} }${
+      item.args.length
+        ? `, {${item.args.map(
+            arg => `
+            ${arg.name}${getNullType(arg.type)}: ${getHookType(arg.type)}`,
+          )}
+        }`
+        : ''
+    }>(${getConstantName(item.name)})
+    }
+
+    export default ${getHookName(item.name)}
+    `,
+  }))
+}
+
+export { genCodes, genQueryHooks, genMutationHooks }
