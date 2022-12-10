@@ -45,7 +45,7 @@ const Mutation = () => {
   }
 
   const handleDownloadHooks = () => {
-    downloadZip(codeValues)
+    downloadZip(hookValues)
   }
 
   return (
