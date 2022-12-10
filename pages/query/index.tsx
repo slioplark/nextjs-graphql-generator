@@ -1,15 +1,11 @@
 import { InputText, InputTextarea } from '@components/Input'
+import { Option } from '@core/types'
 import { Box, Button, Stack } from '@mui/material'
-import download from '@utils/download'
+import downloadZip from '@utils/downloadZip'
 import { genCodes, genHooks } from '@utils/generator'
 import getIntrospection from '@utils/getIntrospection'
 import Head from 'next/head'
 import { useState } from 'react'
-
-interface Option {
-  label: string
-  value: string
-}
 
 const style = {
   inputWrapper: {
@@ -45,11 +41,11 @@ const Query = () => {
   }
 
   const handleDownloadCodes = () => {
-    codeValues.map(item => download(`${item.label}.ts`, item.value))
+    downloadZip(codeValues)
   }
 
   const handleDownloadHooks = () => {
-    hookValues.map(item => download(`${item.label}.ts`, item.value))
+    downloadZip(hookValues)
   }
 
   return (
