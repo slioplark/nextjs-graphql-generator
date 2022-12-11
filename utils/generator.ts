@@ -114,7 +114,7 @@ const genQueryHooks = (data: IntrospectionQuery) => {
         : ''
     }
 
-    const ${getHookName(item.name)} = (${
+    export const ${getHookName(item.name)} = (${
       item.args.length
         ? `variables${
             item.args.filter(arg => getNullType(arg.type) === '?').length ? '?' : ''
@@ -125,8 +125,6 @@ const genQueryHooks = (data: IntrospectionQuery) => {
       item.args.length ? `, { variables: variables }` : ''
     })
     }
-
-    export default ${getHookName(item.name)}
     `,
   }))
 }
@@ -139,7 +137,7 @@ const genMutationHooks = (data: IntrospectionQuery) => {
     import useMutation from './useMutation'
     import { ${getConstantName(item.name)} } from '@core/graphql/mutations'
 
-    const ${getHookName(item.name)} = () => {
+    export const ${getHookName(item.name)} = () => {
       return useMutation<{ ${item.name}: ${getHookType(item.type)} }${
       item.args.length
         ? `, {${item.args.map(
@@ -150,8 +148,6 @@ const genMutationHooks = (data: IntrospectionQuery) => {
         : ''
     }>(${getConstantName(item.name)})
     }
-
-    export default ${getHookName(item.name)}
     `,
   }))
 }
